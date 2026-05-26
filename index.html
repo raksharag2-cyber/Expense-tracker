@@ -1009,6 +1009,10 @@ alert("✅ Bill scanned!")
 reader.readAsDataURL(file)
 
 }
+
+ if("serviceWorker" in navigator){
+navigator.serviceWorker.register("sw.js")
+}
 </script>
 
 </body>
