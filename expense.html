@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>expense tracker</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+font-family:Segoe UI;
+margin:0;
+background:linear-gradient(120deg,#89f7fe,#66a6ff,#fbc2eb,#a6c1ee);
+}
+
+
+
+.card,.dashboard,.feature-box,.option{
+background:rgba(255,255,255,0.7);
+backdrop-filter:blur(10px);
+}
+.options{
+display:flex;
+justify-content:center;
+gap:40px;
+margin-top:30px;
+flex-wrap:wrap;
+}
+
+.option{
+background:white;
+padding:20px;
+border-radius:12px;
+cursor:pointer;
+box-shadow:0 4px 10px rgba(0,0,0,0.2);
+transition:0.3s;
+text-align:center;
+}
+
+.option:hover{
+transform:scale(1.05);
+}
+
+.option img{
+height:120px;
+}
+header{
+background:#222;
+color:white;
+display:flex;
+justify-content:space-between;
+padding:15px 40px;
+align-items:center;
+flex-wrap:wrap;
+}
+
+nav a{
+color:white;
+margin:10px;
+text-decoration:none;
+font-weight:bold;
+cursor:pointer;
+}
+
+.page{
+display:none;
+padding:40px;
+text-align:center;
+}
+
+.active{
+display:block;
+}
+
+.card{
+padding:25px;
+border-radius:12px;
+box-shadow:0 6px 14px rgba(0,0,0,0.3);
+max-width:500px;
+margin:auto;
+}
+
+input,select,textarea{
+padding:10px;
+margin:8px;
+width:85%;
+border-radius:6px;
+border:1px solid gray;
+}
+
+button{
+padding:12px 18px;
+background:linear-gradient(45deg,#ff7f50,#ff4e50);
+border:none;
+border-radius:8px;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+.hero{
+background:url("https://images.unsplash.com/photo-1554224155-8d04cb21cd6c") center/cover;
+height:350px;
+color:white;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+text-shadow:2px 2px 6px black;
+}
+
+.hero h1{
+font-size:48px;
+}
+
+.features{
+display:flex;
+justify-content:center;
+gap:30px;
+flex-wrap:wrap;
+margin-top:40px;
+}
+
+.feature-box{
+padding:20px;
+width:220px;
+border-radius:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.2);
+}
+
+.dashboard{
+max-width:700px;
+margin:auto;
+padding:25px;
+border-radius:12px;
+box-shadow:0 6px 12px rgba(0,0,0,0.3);
+}
+
+.transaction{
+display:flex;
+justify-content:space-between;
+border-bottom:1px solid #ddd;
+padding:8px;
+}
+
+.delete-btn{
+background:red;
+color:white;
+border:none;
+padding:4px 10px;
+border-radius:4px;
+cursor:pointer;
+}
+
+.dark-mode{
+background:#111;
+color:white;
+}
+
+.dark-mode header{
+background:#000;
+}
+
+.dark-mode .card,
+.dark-mode .dashboard,
+.dark-mode .feature-box,
+.dark-mode .option{
+background:#222;
+color:white;
+}
+
+.dark-mode input,
+.dark-mode select,
+.dark-mode textarea{
+background:#333;
+color:white;
+border:1px solid #555;
+}
+
+.card{
+animation:fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn{
+from{
+opacity:0;
+transform:translateY(30px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+button:hover{
+transform:scale(1.05);
+box-shadow:0 6px 14px rgba(0,0,0,0.3);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header id="mainHeader">
+
+<h2>💰 Expense Tracker</h2>
+
+<nav>
+
+<a onclick="showPage('home')">Home</a>
+<a onclick="showPage('tracker')">Tracker</a>
+<a onclick="showPage('about')">About</a>
+<a onclick="showPage('help')">Help</a>
+<a onclick="showPage('report')">Reports</a>
+<a onclick="showPage('profile')">Profile</a>
+<button onclick="toggleDark()">🌙 Dark Mode</button>
+</nav>
+
+<button onclick="logout()">Logout</button>
+
+</header>
+
+<!-- LOGIN -->
+
+<div id="login" class="page active">
+
+<div class="card">
+
+<h2>Login</h2>
+
+<input id="username" placeholder="Username"><br>
+<input id="password" type="password" placeholder="Password"><br>
+
+<button onclick="login()">Login</button>
+
+<p id="loginMsg"></p>
+
+<p>Don't have an account? 
+<a onclick="showPage('signup')" style="color:blue;cursor:pointer">Signup</a>
+</p>
+</div>
+
+</div>
+
+
+<!-- SIGNUP -->
+
+<div id="signup" class="page">
+
+<div class="card">
+
+<h2>Create Account</h2>
+
+<input id="newUser" placeholder="Create Username"><br>
+<input id="newPass" type="password" placeholder="Create Password"><br>
+
+<button onclick="signup()">Signup</button>
+
+<p id="signupMsg"></p>
+
+<p>Already have an account?
+<a onclick="showPage('login')" style="color:blue;cursor:pointer">Login</a>
+</p>
+
+</div>
+
+</div>
+
+<!-- HOME -->
+
+<div id="home" class="page">
+
+<div class="hero">
+
+<h1 id="welcomeText">Smart Expense Tracker</h1>
+<p>Track income, control spending, grow savings</p>
+
+</div>
+
+<div class="features">
+
+<div class="feature-box">
+<h3>💰 Income Tracking</h3>
+<p>Easily record your salary or other income.</p>
+</div>
+
+<div class="feature-box">
+<h3>📉 Expense Control</h3>
+<p>Track daily spending and avoid overspending.</p>
+</div>
+
+<div class="feature-box">
+<h3>📊 Visual Reports</h3>
+<p>See income vs expense chart instantly.</p>
+</div>
+
+</div>
+
+<div class="options">
+
+<div class="option" onclick="showPage('tracker')">
+
+<img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+<h3>Add Income</h3>
+
+</div>
+
+<div class="option" onclick="showPage('tracker')">
+
+<img src="https://cdn-icons-png.flaticon.com/512/2331/2331941.png">
+<h3>Add Expense</h3>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- TRACKER -->
+
+<div id="tracker" class="page">
+
+<div class="dashboard">
+
+
+
+<h2>Expense Tracker</h2>
+
+<!-- new-->
+
+
+<select id="chartColor" onchange="update()">
+  <option value="default">Default Colors</option>
+  <option value="pastel">Pastel Colors</option>
+  <option value="neon">Neon Colors</option>
+</select>
+<!-- new-->
+
+<input id="budget" type="number" placeholder="Enter Monthly Budget">
+
+<br>
+
+<input id="search" placeholder="Search transaction" onkeyup="searchTransaction()">
+
+<br>
+
+<input type="date" id="date">
+
+<br>
+
+<select id="type">
+<option value="income">Income</option>
+<option value="expense">Expense</option>
+</select>
+
+<br>
+
+<select id="category">
+<option value="Food">Food</option>
+<option value="Travel">Travel</option>
+<option value="Shopping">Shopping</option>
+<option value="Bills">Bills</option>
+<option value="Other">Other</option>
+</select>
+
+<br>
+
+<input id="desc" placeholder="Description">
+
+<br>
+
+<input id="amount" type="number" placeholder="Amount">
+
+<br>
+
+<button onclick="addTransaction()">Add</button>
+
+<h3>📷 Scan Bill</h3>
+
+<input type="file" accept="image/*" capture="camera" onchange="scanBill(event)">
+
+<br><br>
+
+<img id="billPreview" style="max-width:200px;display:none;border-radius:10px;">
+
+<button onclick="downloadReport()">Download Report</button>
+
+<h3>Total Income: ₹ <span id="income">0</span></h3>
+<h3>Total Expense: ₹ <span id="expense">0</span></h3>
+
+<h3>Transactions</h3>
+
+<div id="list"></div>
+
+<h2>💼 Smart Balance: ₹ <span id="balance">0</span></h2>
+<h3>🎯 Savings Goal</h3>
+
+<input id="goal" type="number" placeholder="Enter Savings Goal" oninput="updateSavings()">
+
+<div style="background:#ddd;border-radius:10px;height:20px;width:100%;margin-top:10px">
+<div id="progressBar" style="background:#4caf50;height:20px;width:0%;border-radius:10px"></div>
+</div>
+
+<canvas id="chart"></canvas>
+<h3>🧠 AI Spending Insight</h3>
+<p id="aiInsight">No data yet</p>
+
+</div>
+
+</div>
+
+<!-- ABOUT -->
+
+<div id="about" class="page">
+
+<div class="card">
+
+<h2>About Smart Expense Tracker</h2>
+
+<p>
+Smart Expense Tracker is a simple web application designed to help users
+manage their personal finances.
+</p>
+
+<p>
+With this tool you can easily record your income and expenses,
+view your balance, and understand your spending habits.
+</p>
+
+<p>
+Features include:
+</p>
+
+<ul style="text-align:left">
+<li>Track income and expenses</li>
+<li>Visual chart reports</li>
+<li>Monthly balance calculation</li>
+<li>Dark mode support</li>
+<li>Mobile responsive design</li>
+</ul>
+
+</div>
+
+</div>
+
+<!-- HELP -->
+
+<div id="help" class="page">
+<div class="card">
+
+<h2>Help</h2>
+
+<p>
+If you have any queries about this website or face any issues while using it,
+please send us a message.
+</p>
+
+<input placeholder="Name"><br>
+<input placeholder="Email"><br>
+<textarea placeholder="Write your message"></textarea><br>
+
+<button onclick="alert('Message Sent')">Send</button>
+
+</div>
+</div>
+
+<!--code-->
+<div id="report" class="page">
+
+<div class="dashboard">
+
+<h2>📅 Monthly Report</h2>
+
+<input type="month" id="reportMonth">
+
+<button onclick="generateReport()">Generate</button>
+
+<h3>Total Income: ₹ <span id="monthIncome">0</span></h3>
+<h3>Total Expense: ₹ <span id="monthExpense">0</span></h3>
+
+<canvas id="categoryChart"></canvas>
+
+</div>
+</div>
+
+<!--profile page-->
+<div id="profile" class="page">
+
+<div class="card">
+
+<h2>👤 Profile</h2>
+
+<h3 id="profileUser"></h3>
+
+<p>Total Transactions: <span id="totalTrans"></span></p>
+
+<p>Total Balance: ₹ <span id="profileBalance"></span></p>
+
+</div>
+
+</div>
+
+
+
+
+
+<script>
+
+//Welcome
+let billImage = ""
+//SIGNUP
+function signup() {
+  let user = document.getElementById("newUser").value
+  let pass = document.getElementById("newPass").value
+  let msg = document.getElementById("signupMsg")
+
+  if(user === "" || pass === ""){
+    msg.innerText = "Fill all fields"
+    msg.style.color = "red"
+    return
+  }
+
+  let users = JSON.parse(localStorage.getItem("users")) || {}
+
+  if(users[user]){
+    msg.innerText = "Username already exists ❌"
+    msg.style.color = "red"
+    return
+  }
+
+  // Add new user
+  users[user] = pass
+  localStorage.setItem("users", JSON.stringify(users))
+
+  msg.innerText = "Account Created Successfully ✅"
+  msg.style.color = "green"
+
+  setTimeout(()=>{
+    showPage("login")
+  }, 1000)
+}
+
+//login
+function login() {
+  let user = document.getElementById("username").value
+  let pass = document.getElementById("password").value
+  let msg = document.getElementById("loginMsg")
+
+  let users = JSON.parse(localStorage.getItem("users")) || {}
+
+  if(users[user] && users[user] === pass){
+    localStorage.setItem("login","true")
+    localStorage.setItem("user", user)  // save current user
+    msg.innerText = "Login Successful ✅"
+    msg.style.color = "green"
+
+    // Load user's transactions
+    transactions = JSON.parse(localStorage.getItem("transactions_" + user)) || []
+
+    setTimeout(()=>{
+      showPage("home")
+      setWelcome()
+      update()
+    }, 800)
+  } else {
+    msg.innerText = "Invalid Username or Password ❌"
+    msg.style.color = "red"
+  }
+}
+
+//logout
+function logout(){
+
+localStorage.removeItem("login")
+
+location.reload()
+
+}
+
+//login
+function togglePassword(){
+
+let pass=document.getElementById("password")
+
+if(pass.type==="password"){
+pass.type="text"
+}else{
+pass.type="password"
+}
+
+}
+
+
+
+window.onload = function(){
+  document.getElementById("mainHeader").style.display="none"
+
+  if(localStorage.getItem("login")==="true"){
+    currentUser = localStorage.getItem("user")
+    transactions = JSON.parse(localStorage.getItem("transactions_"+currentUser)) || []
+    showPage("home")
+    setWelcome()
+    update()
+  } else {
+    showPage("login")
+  }
+}
+
+//dark
+function toggleDark(){
+document.body.classList.toggle("dark-mode")
+}
+
+let currentUser = localStorage.getItem("user")
+let transactions = JSON.parse(localStorage.getItem("transactions_"+currentUser)) || []
+let chart
+
+function showPage(p){
+
+document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"))
+document.getElementById(p).classList.add("active")
+
+if(p==="profile"){
+loadProfile()
+}
+
+if(p==="login" || p==="signup"){
+document.getElementById("mainHeader").style.display="none"
+}else{
+document.getElementById("mainHeader").style.display="flex"
+}
+
+}
+
+
+//add transaction
+function addTransaction(){
+  let currentUser = localStorage.getItem("user"); // <--- add this
+  let date=document.getElementById("date").value
+  let type=document.getElementById("type").value
+  let category=document.getElementById("category").value
+  let desc=document.getElementById("desc").value
+  let amount=parseInt(document.getElementById("amount").value)
+
+  if(!desc || !amount){
+    alert("Enter description and amount")
+    return
+  }
+
+  transactions.push({date,type,desc,amount,category,image:billImage})
+
+  localStorage.setItem("transactions_"+currentUser,JSON.stringify(transactions))
+
+  update()
+}
+
+function deleteTransaction(index){
+  let currentUser = localStorage.getItem("user"); // add this
+  transactions.splice(index,1)
+  localStorage.setItem("transactions_"+currentUser,JSON.stringify(transactions))
+  update()
+}
+
+
+function drawChart(income,expense){
+
+let ctx=document.getElementById("chart")
+
+if(chart) chart.destroy()
+
+chart=new Chart(ctx,{
+type:"pie",
+data:{
+labels:["Income","Expense"],
+datasets:[{
+data:[income,expense]
+}]
+}
+})
+
+}
+
+function searchTransaction(){
+
+let text=document.getElementById("search").value.toLowerCase()
+
+let items=document.querySelectorAll(".transaction")
+
+items.forEach(x=>{
+x.style.display=x.innerText.toLowerCase().includes(text)?"flex":"none"
+})
+
+}
+
+function downloadReport(){
+
+let csv="Date,Description,Category,Amount\n"
+
+transactions.forEach(t=>{
+csv+=`${t.date},${t.desc},${t.category},${t.amount}\n`
+})
+
+let blob=new Blob([csv],{type:"text/csv"})
+
+let a=document.createElement("a")
+a.href=URL.createObjectURL(blob)
+a.download="expense_report.csv"
+a.click()
+
+}
+//welcome
+function setWelcome(){
+
+let user=localStorage.getItem("user")
+
+if(user){
+document.getElementById("welcomeText").innerText="Welcome "+user+" 👋"
+}
+
+}
+
+//new
+// Add global variable for filter
+let filteredTransactions = [];
+
+// Filter by Month/Week
+function applyFilter() {
+  let month = document.getElementById("monthFilter").value;
+  let week = document.getElementById("weekFilter").value;
+
+  filteredTransactions = transactions.filter(t => {
+    if(month){
+      return t.date.startsWith(month);
+    } else if(week){
+      let d = new Date(t.date);
+      let onejan = new Date(d.getFullYear(),0,1);
+      let weekNum = Math.ceil((((d - onejan) / 86400000) + onejan.getDay()+1)/7);
+      return "W" + weekNum === week;
+    }
+    return true;
+  });
+
+  update(true);
+}
+
+// Modify update() to accept filtered
+function update(isFiltered = false){
+  let list=document.getElementById("list")
+  list.innerHTML=""
+  let dataArray = isFiltered ? filteredTransactions : transactions;
+
+  let income=0
+  let expense=0
+
+  dataArray.forEach((t,i)=>{
+    let div=document.createElement("div")
+    div.className="transaction"
+
+    div.innerHTML=`
+${t.date} - ${t.desc} (${t.category}) ₹${t.amount}
+${t.image ? `<br><img src="${t.image}" width="80">` : ""}
+<button class="delete-btn" onclick="deleteTransaction(${i})">Delete</button>
+`
+    list.appendChild(div)
+
+    if(t.type=="income") income+=t.amount
+    else expense+=t.amount
+  })
+
+  document.getElementById("income").innerText=income
+  document.getElementById("expense").innerText=expense
+  let balance=income-expense
+  let bal=document.getElementById("balance")
+  bal.innerText=balance
+  bal.style.color = balance<0 ? "red" : "green"
+
+  let budget=document.getElementById("budget").value
+  if(budget && expense>budget) alert("⚠ Budget limit crossed!")
+
+  drawChart(income, expense)
+  aiInsight()
+}
+
+// Update chart colors based on select
+function drawChart(income, expense){
+  let ctx=document.getElementById("chart")
+  if(chart) chart.destroy()
+
+  let selectedColor = document.getElementById("chartColor").value;
+  let bgColors = ["#4caf50","#f44336"]; // default
+  if(selectedColor==="pastel") bgColors=["#ffd1dc","#d1f0ff"];
+  else if(selectedColor==="neon") bgColors=["#39ff14","#ff073a"];
+
+  chart=new Chart(ctx,{
+    type:"pie",
+    data:{
+      labels:["Income","Expense"],
+      datasets:[{ data:[income,expense], backgroundColor:bgColors }]
+    }
+  })
+}
+//new
+// CATEGORY CHART
+let categoryChart
+
+function generateReport(){
+
+let month=document.getElementById("reportMonth").value
+
+let income=0
+let expense=0
+
+let categoryTotals={}
+
+transactions.forEach(t=>{
+
+if(t.date.startsWith(month)){
+
+if(t.type=="income") income+=t.amount
+else expense+=t.amount
+
+if(!categoryTotals[t.category]){
+categoryTotals[t.category]=0
+}
+
+categoryTotals[t.category]+=t.amount
+
+}
+
+})
+
+document.getElementById("monthIncome").innerText=income
+document.getElementById("monthExpense").innerText=expense
+
+let ctx=document.getElementById("categoryChart")
+
+if(categoryChart) categoryChart.destroy()
+
+categoryChart=new Chart(ctx,{
+type:"bar",
+data:{
+labels:Object.keys(categoryTotals),
+datasets:[{
+label:"Expenses",
+data:Object.values(categoryTotals)
+}]
+}
+})
+
+}
+
+// PROFILE INFO
+function loadProfile(){
+
+let user=localStorage.getItem("user")
+
+document.getElementById("profileUser").innerText="Username: "+user
+
+document.getElementById("totalTrans").innerText=transactions.length
+
+let income=0
+let expense=0
+
+transactions.forEach(t=>{
+if(t.type=="income") income+=t.amount
+else expense+=t.amount
+})
+
+document.getElementById("profileBalance").innerText=income-expense
+
+}
+
+// SAVINGS PROGRESS
+function updateSavings(){
+
+let goal=document.getElementById("goal").value
+
+if(!goal) return
+
+let income=0
+let expense=0
+
+transactions.forEach(t=>{
+if(t.type=="income") income+=t.amount
+else expense+=t.amount
+})
+
+let balance=income-expense
+
+let percent=(balance/goal)*100
+
+if(percent>100) percent=100
+
+document.getElementById("progressBar").style.width=percent+"%"
+
+}
+
+// AUTO BACKUP
+function autoBackup(){
+
+let data=JSON.stringify(transactions)
+
+localStorage.setItem("backup_"+currentUser,data)
+
+}
+
+setInterval(autoBackup,10000)
+
+//AI
+
+function aiInsight(){
+
+if(transactions.length===0){
+document.getElementById("aiInsight").innerText="Add some transactions to see insights."
+return
+}
+
+let categoryTotals={}
+
+transactions.forEach(t=>{
+if(t.type==="expense"){
+
+if(!categoryTotals[t.category]){
+categoryTotals[t.category]=0
+}
+
+categoryTotals[t.category]+=t.amount
+
+}
+})
+
+let maxCategory=""
+let maxAmount=0
+
+for(let cat in categoryTotals){
+if(categoryTotals[cat]>maxAmount){
+maxAmount=categoryTotals[cat]
+maxCategory=cat
+}
+}
+
+let income=0
+let expense=0
+
+transactions.forEach(t=>{
+if(t.type==="income") income+=t.amount
+else expense+=t.amount
+})
+
+let msg=""
+
+if(expense>income){
+msg="⚠ Your expenses are higher than income."
+}else{
+msg="💡 You spent most money on "+maxCategory+"."
+}
+
+document.getElementById("aiInsight").innerText=msg
+
+}
+//camera
+function scanBill(event){
+
+let file = event.target.files[0]
+if(!file) return
+
+let reader = new FileReader()
+
+reader.onload = function(e){
+
+let img = document.getElementById("billPreview")
+img.src = e.target.result
+img.style.display = "block"
+
+billImage = e.target.result
+
+Tesseract.recognize(
+e.target.result,
+'eng'
+).then(({ data: { text } }) => {
+
+let lines = text.split("\n").filter(x => x.trim() !== "")
+
+if(lines.length > 0){
+document.getElementById("desc").value = lines[0]
+}
+
+let amountMatch = text.match(/(\d+\.\d{2}|\d+)/g)
+
+if(amountMatch){
+let amount = amountMatch[amountMatch.length-1]
+document.getElementById("amount").value = amount
+}
+
+alert("✅ Bill scanned!")
+
+})
+
+}
+
+reader.readAsDataURL(file)
+
+}
+</script>
+
+</body>
+</html>
